@@ -1,0 +1,31 @@
+[package]
+name = "strategyforge-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core game engine and systems for StrategyForge"
+license = "MIT"
+
+[dependencies]
+bevy = { version = "0.14", default-features = false }
+bevy_reflect = { version = "0.14", features = ["bevy"] }
+
+# Plugin system
+dyn-clone = "1.0"
+libloading = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+
+[lib]
+name = "strategyforge_core"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+
+[profile.dev]
+opt-level = 1  # Faster debug builds with some optimizations
+
+[profile.release]
+lto = true      # Link-time optimization
+codegen-units = 1  # Better optimization, slower build
