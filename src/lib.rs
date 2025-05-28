@@ -5,10 +5,16 @@
 #[warn(rustdoc::missing_crate_level_docs)]
 
 use thiserror::Error;
+extern crate libloading;
 
 pub mod plugin;
 pub mod state;
 pub mod menu;
+
+// Re-export commonly needed types
+pub use bevy::prelude::*;
+pub use plugin::GamePlugin;
+pub use state::GameState;
 
 use bevy::prelude::*;
 

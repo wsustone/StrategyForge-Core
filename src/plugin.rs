@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use thiserror::Error;
 use dyn_clone::DynClone;
+extern crate libloading;
 
 /// Trait for plugins that can be loaded dynamically
 pub trait GamePlugin: Plugin + DynClone + Send + Sync + 'static {

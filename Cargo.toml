@@ -6,17 +6,24 @@ description = "Core game engine and systems for StrategyForge"
 license = "MIT"
 
 [dependencies]
-bevy = { version = "0.14", features = ["bevy_ui", "bevy_state"] }
+bevy = { workspace = true, features = ["bevy_ui", "bevy_state"] }
 bevy_reflect = { version = "0.14", features = ["bevy"] }
 thiserror = "1.0"
 dyn-clone = "1.0"
-libloading = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+libloading = "0.8"
+sf-plugin-template = { path = "../sf-plugin-template" }
+sf-settings-menu = { path = "../sf-settings-menu" }
 
 [lib]
 name = "strategyforge_core"
+path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "strategyforge-core-bin"
+path = "src/main.rs"
 
 [features]
 default = []
