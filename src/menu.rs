@@ -27,6 +27,10 @@ pub struct MenuContainer;
 #[derive(Component)]
 pub struct ContentArea;
 
+// Component to mark the exit button
+#[derive(Component)]
+pub struct ExitButton;
+
 /// Registry of menu plugins
 /// This is a manual registry since we can't use Resources for this
 /// due to thread-safety concerns
@@ -71,61 +75,94 @@ fn setup_main_menu(mut commands: Commands) {
                     height: Val::Percent(100.0),
                     flex_direction: FlexDirection::Column,
                     padding: UiRect::all(Val::Px(10.0)),
+                    justify_content: JustifyContent::SpaceBetween, // This pushes the top and bottom sections apart
                     ..default()
                 },
                 background_color: Color::rgb(0.2, 0.2, 0.3).into(),
                 ..default()
             },
-            MenuContainer,
-            Name::new("MenuContainer"),
+            Name::new("MenuPanel"),
         ))
         .with_children(|parent| {
-            // Menu title
-            parent.spawn(
-                TextBundle::from_section(
-                    "Main Menu",
-                    TextStyle {
-                        font_size: 28.0,
-                        color: Color::WHITE,
-                        ..default()
-                    },
-                )
-                .with_style(Style {
-                    margin: UiRect::vertical(Val::Px(20.0)),
-                    align_self: AlignSelf::Center,
-                    ..default()
-                }),
-            );
-            
-            // Exit button at the bottom of the menu
-            parent.spawn(
+            // Top section: Contains title and menu items
+            parent.spawn((
                 NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),
-                        height: Val::Auto,
                         flex_direction: FlexDirection::Column,
-                        margin: UiRect::top(Val::Auto), // Push to bottom
+                        align_items: AlignItems::Stretch,
                         ..default()
                     },
                     ..default()
-                }
-            )
+                },
+                Name::new("TopSection"),
+            ))
             .with_children(|parent| {
-                // Exit game button
+                // Menu title
                 parent.spawn(
+                    TextBundle::from_section(
+                        "Main Menu",
+                        TextStyle {
+                            font_size: 28.0,
+                            color: Color::WHITE,
+                            ..default()
+                        },
+                    )
+                    .with_style(Style {
+                        margin: UiRect::vertical(Val::Px(20.0)),
+                        align_self: AlignSelf::Center,
+                        ..default()
+                    }),
+                );
+                
+                // Menu items container (plugins will add items here)
+                parent.spawn((
+                    NodeBundle {
+                        style: Style {
+                            width: Val::Percent(100.0),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Stretch,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    MenuContainer,
+                    Name::new("MenuItemsContainer"),
+                ));
+            });
+            
+            // Bottom section: Contains exit button
+            parent.spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Stretch,
+                        margin: UiRect::top(Val::Px(10.0)),
+                        ..default()
+                    },
+                    ..default()
+                },
+                Name::new("BottomSection"),
+            ))
+            .with_children(|parent| {
+                // Exit button
+                parent.spawn((
                     ButtonBundle {
                         style: Style {
                             width: Val::Percent(100.0),
                             height: Val::Px(50.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
-                            margin: UiRect::top(Val::Px(20.0)),
+                            margin: UiRect::all(Val::Px(5.0)),
                             ..default()
                         },
-                        background_color: Color::rgb(0.6, 0.2, 0.2).into(),
+                        background_color: Color::srgb(0.6, 0.2, 0.2).into(),
                         ..default()
                     },
-                )
+                    ExitButton,
+                    Name::new("ExitButton"),
+                ))
                 .with_children(|parent| {
                     parent.spawn(
                         TextBundle::from_section(
@@ -135,7 +172,7 @@ fn setup_main_menu(mut commands: Commands) {
                                 color: Color::WHITE,
                                 ..default()
                             },
-                        ),
+                        )
                     );
                 });
             });

@@ -15,6 +15,7 @@ serde_json = "1.0"
 libloading = "0.8"
 sf-plugin-template = { path = "../sf-plugin-template" }
 sf-settings-menu = { path = "../sf-settings-menu" }
+sf-campaign-menu = { path = "../sf-campaign-menu" }
 
 [lib]
 name = "strategyforge_core"

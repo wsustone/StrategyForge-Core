@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use strategyforge_core::StrategyForgeCorePlugin;
-use strategyforge_core::menu::{MenuPlugin, register_menu_plugin};
+use strategyforge_core::menu::{ExitButton, register_menu_plugin};
 use sf_settings_menu::SettingsMenuPlugin;
-use sf_plugin_template::MenuItemPlugin;
+use sf_campaign_menu::CampaignMenuPlugin;
 
 fn main() {
-    // Register settings menu plugin before app creation
+    // Register menu plugins before app creation
     register_menu_plugin(Box::new(SettingsMenuPlugin::default()));
+    register_menu_plugin(Box::new(CampaignMenuPlugin::default()));
     
     App::new()
         .add_plugins(DefaultPlugins)
@@ -23,9 +24,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-/// Component to mark the exit button
-#[derive(Component)]
-struct ExitButton;
+// Using the ExitButton component from the menu module
 
 
 
@@ -42,11 +41,11 @@ fn handle_exit_button(
             }
             Interaction::Hovered => {
                 // Change color when hovered
-                *color = Color::rgb(0.6, 0.3, 0.3).into();
+                *color = Color::srgb(0.6, 0.3, 0.3).into();
             }
             Interaction::None => {
                 // Reset color when not interacting
-                *color = Color::rgb(0.5, 0.2, 0.2).into();
+                *color = Color::srgb(0.5, 0.2, 0.2).into();
             }
         }
     }
