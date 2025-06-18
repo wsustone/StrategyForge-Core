@@ -1,22 +1,27 @@
 //! The core game engine and systems for StrategyForge.
 //! This crate provides the foundation for all game plugins.
 
-#[warn(missing_docs)]
-#[warn(rustdoc::missing_crate_level_docs)]
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_crate_level_docs)]
 
 use thiserror::Error;
 extern crate libloading;
 
-pub mod plugin;
+/// Game state management
+/// 
+/// This module handles the different states of the game (e.g., MainMenu, InGame, Settings)
+/// and manages transitions between them.
 pub mod state;
+
+/// Main menu UI and interaction systems
+/// 
+/// This module contains the main menu UI components and systems for handling
+/// user interactions with the main menu.
 pub mod menu;
 
 // Re-export commonly needed types
 pub use bevy::prelude::*;
-pub use plugin::GamePlugin;
 pub use state::GameState;
-
-use bevy::prelude::*;
 
 /// Re-export common Bevy types
 pub use bevy::{
@@ -58,14 +63,15 @@ pub struct CorePlugin;
 
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
+        // Add the menu plugin
         app.add_plugins(menu::MenuPlugin);
-        app.init_state::<state::GameState>();
         
-        #[cfg(feature = "debug")]
-        app.add_systems(Update, debug::debug_system);
+        // Initialize the game state
+        app.init_state::<state::GameState>();
     }
 }
 
+#[allow(dead_code)]
 fn setup_core_systems() {
     // Core system initialization
     info!("Initializing StrategyForge Core");
@@ -80,31 +86,27 @@ impl Plugin for StrategyForgeCorePlugin {
         app.add_plugins(CorePlugin);
         
         // Setup plugin loading system
-        app.init_resource::<LoadedPlugins>();
-        
-        // Add plugin loading commands
-        app.add_systems(Startup, load_initial_plugins);
+        // app.init_resource::<LoadedPlugins>(); // Dynamic plugin system removed
+        // app.add_systems(Startup, load_initial_plugins); // Dynamic plugin system removed
     }
 }
 
-/// Resource tracking loaded plugins
-#[derive(Resource, Default)]
-pub struct LoadedPlugins {
-    plugins: Vec<Box<dyn plugin::GamePlugin>>,
-}
+// /// Resource tracking loaded plugins (Dynamic plugin system removed)
+// #[derive(Resource, Default)]
+// pub struct LoadedPlugins {
+//     plugins: Vec<Box<dyn crate::GamePlugin>>, // Assuming GamePlugin trait would be defined elsewhere or removed
+// }
 
-/// System to load initial plugins
-fn load_initial_plugins(
-    mut commands: Commands,
-    mut loaded_plugins: ResMut<LoadedPlugins>,
-) {
-    // TODO: Load plugins from config
-    // For now we'll just log that plugin loading is ready
-    info!("Plugin system initialized - ready to load plugins");
-}
+// /// System to load initial plugins (Dynamic plugin system removed)
+// fn load_initial_plugins(
+//     mut commands: Commands,
+//     mut loaded_plugins: ResMut<LoadedPlugins>,
+// ) {
+//     // TODO: Load plugins from config
+//     // For now we'll just log that plugin loading is ready
+//     info!("Plugin system initialized - ready to load plugins");
+// }
 
-// Example plugin (for demonstration)
-pub mod example_plugin;
 
 #[cfg(test)]
 mod tests {

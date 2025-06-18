@@ -5,34 +5,46 @@ edition = "2021"
 description = "Core game engine and systems for StrategyForge"
 license = "MIT"
 
-[dependencies]
-bevy = { workspace = true, features = ["bevy_ui", "bevy_state"] }
-bevy_reflect = { version = "0.14", features = ["bevy"] }
-thiserror = "1.0"
-dyn-clone = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-libloading = "0.8"
-sf-plugin-template = { path = "../sf-plugin-template" }
-sf-settings-menu = { path = "../sf-settings-menu" }
-sf-campaign-menu = { path = "../sf-campaign-menu" }
-
-[lib]
-name = "strategyforge_core"
-path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
-
 [[bin]]
-name = "strategyforge-core-bin"
+name = "strategyforge-core"
 path = "src/main.rs"
 
+[dependencies]
+# Bevy - Using features from workspace
+bevy = { workspace = true }
+
+# UI and Plugins
+bevy_egui = { workspace = true }
+egui = { workspace = true }
+
+# Core Dependencies
+thiserror = { workspace = true }
+dyn-clone = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+libloading = { workspace = true }
+once_cell = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+ron = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+winit = { workspace = true }
+
 [features]
-default = []
-debug = []
+# Default features for the game
+default = ["debug"]
 
-[profile.dev]
-opt-level = 1  # Faster debug builds with some optimizations
+# Debug features (only enabled in debug builds)
+debug = [
+    # No additional debug features to minimize binary size
+]
 
-[profile.release]
-lto = true      # Link-time optimization
-codegen-units = 1  # Better optimization, slower build
+# Release features (only enabled in release builds)
+release = [
+    # No additional release features
+]
+
+# Test features (only enabled during testing)
+test = [
+    "bevy/bevy_winit"
+]

@@ -1,52 +1,72 @@
-use bevy::prelude::*;
-use bevy::app::AppExit;
-use strategyforge_core::StrategyForgeCorePlugin;
-use strategyforge_core::menu::{ExitButton, register_menu_plugin};
-use sf_settings_menu::SettingsMenuPlugin;
-use sf_campaign_menu::CampaignMenuPlugin;
+use bevy::{
+    prelude::*,
+    app::App,
+    log::info,
+
+    render::texture::ImagePlugin,
+};
+
+mod state;
+mod ui;
+
+// Re-export commonly used items
+pub use state::*;
+pub use ui::*;
+
+/// Plugin that handles base application functionality
+pub struct CorePlugin;
+
+impl Plugin for CorePlugin {
+    fn build(&self, app: &mut App) {
+        // Initialize the game state system
+        app.init_state::<state::GameState>();
+        
+        // Add the core startup system
+        app.add_systems(Startup, core_startup_system);
+    }
+    
+    fn ready(&self, _app: &App) -> bool {
+        true
+    }
+    
+    fn finish(&self, _app: &mut App) {
+        // Cleanup if needed
+    }
+}
+
+// Simple system to ensure core Bevy schedules are properly initialized
+fn core_startup_system() {
+    info!("Core systems initialized, ready for plugin loading");
+}
 
 fn main() {
-    // Register menu plugins before app creation
-    register_menu_plugin(Box::new(SettingsMenuPlugin::default()));
-    register_menu_plugin(Box::new(CampaignMenuPlugin::default()));
+    // Create the app
+    let mut app = App::new();
+
+    // Set up the default plugins
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "StrategyForge".to_string(),
+                    resolution: (1280.0, 720.0).into(),
+                    resizable: true,
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(ImagePlugin::default_nearest()) // Pixel perfect rendering
+    )
+    .add_plugins((
+        // Add core plugin
+        CorePlugin,
+        // Add UI plugin
+        ui::UIPlugin,
+    ));
     
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(StrategyForgeCorePlugin) // This already includes the MenuPlugin
-        .add_systems(Startup, setup_camera)
-        .add_systems(Update, handle_exit_button)
-        .run();
-}
-
-/// Set up a camera for UI rendering
-fn setup_camera(mut commands: Commands) {
-    // Create a 2D camera for UI
-    commands.spawn(Camera2dBundle::default());
-}
-
-// Using the ExitButton component from the menu module
-
-
-
-/// System to handle the exit button click
-fn handle_exit_button(
-    mut interaction_query: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<ExitButton>)>,
-    mut app_exit_events: EventWriter<AppExit>,
-) {
-    for (interaction, mut color) in interaction_query.iter_mut() {
-        match *interaction {
-            Interaction::Pressed => {
-                // Exit the application when the button is pressed
-                app_exit_events.send(AppExit::Success);
-            }
-            Interaction::Hovered => {
-                // Change color when hovered
-                *color = Color::srgb(0.6, 0.3, 0.3).into();
-            }
-            Interaction::None => {
-                // Reset color when not interacting
-                *color = Color::srgb(0.5, 0.2, 0.2).into();
-            }
-        }
-    }
+    // Set the initial game state
+    app.insert_state(GameState::MainMenu);
+    
+    // Run the app
+    app.run();
 }
