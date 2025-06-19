@@ -1,7 +1,14 @@
 use bevy::prelude::*;
 use bevy::window::{PrimaryWindow, WindowMode};
 use crate::state::GameState;
-use super::components::*;
+use super::{
+    SettingsState, SettingControl, SettingType, VideoSettingControl,
+    TabButton, BackButton, ApplyButton, ResetButton, TabContent, SettingsMenuMarker
+};
+use bevy::ui::BackgroundColor;
+
+// Re-export the module for external use
+pub use super::components;
 
 // UI Constants
 const WINDOW_BG_COLOR: Color = Color::srgb(0.1, 0.1, 0.1);
@@ -14,20 +21,10 @@ const TEXT_DISABLED_COLOR: Color = Color::srgba(1.0, 1.0, 1.0, 0.5);
 // Helper function to create text style
 fn regular_text_style(asset_server: &Res<AssetServer>, size: f32) -> TextStyle {
     TextStyle {
-        font: asset_server.load("default"),
+        font: default(), // Use Bevy's default font
         font_size: size,
         color: TEXT_COLOR,
     }
-}
-
-// Settings resources
-#[derive(Resource, Default)]
-pub struct SettingsState {
-    pub current_tab: u8,
-    pub is_fullscreen: bool,
-    pub vsync: bool,
-    pub resolution: (u32, u32),
-    pub has_unsaved_changes: bool,
 }
 
 // Helper function to create a setting row
@@ -68,8 +65,6 @@ pub(crate) fn setup_settings_menu(
     asset_server: Res<AssetServer>,
     settings_state: ResMut<SettingsState>,
 ) {
-    // Spawn a 2D camera for the UI
-    commands.spawn(Camera2dBundle::default());
     // Main container
     commands
         .spawn((
@@ -313,14 +308,14 @@ pub(crate) fn handle_settings_button_interactions(
             // Handle apply button
             if apply_button_query.get(entity).is_ok() {
                 // TODO: Apply settings
-                settings_state.has_unsaved_changes = false;
+                info!("Settings applied");
                 continue;
             }
 
             // Handle reset button
             if reset_button_query.get(entity).is_ok() {
                 // TODO: Reset settings to defaults
-                settings_state.has_unsaved_changes = true;
+                info!("Settings reset to defaults");
                 continue;
             }
         }
@@ -338,20 +333,18 @@ pub(crate) fn handle_settings_changes(
             if let Some(video_control) = control.as_video_setting_control() {
                 match video_control {
                     VideoSettingControl::Fullscreen => {
+                        settings_state.video_settings.fullscreen = !settings_state.video_settings.fullscreen;
                         if let Ok(mut window) = window_query.get_single_mut() {
-                            settings_state.is_fullscreen = !settings_state.is_fullscreen;
-                            window.mode = if settings_state.is_fullscreen {
+                            window.mode = if settings_state.video_settings.fullscreen {
                                 WindowMode::Fullscreen
                             } else {
                                 WindowMode::Windowed
                             };
-                            settings_state.has_unsaved_changes = true;
                         }
                     }
                     VideoSettingControl::VSync => {
-                        settings_state.vsync = !settings_state.vsync;
+                        settings_state.video_settings.vsync = !settings_state.video_settings.vsync;
                         // TODO: Apply VSync setting to the renderer
-                        settings_state.has_unsaved_changes = true;
                     }
                     _ => {}
                 }

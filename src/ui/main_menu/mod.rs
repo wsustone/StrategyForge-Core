@@ -12,6 +12,9 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Run the UI camera setup when the app starts
+            .add_systems(Startup, systems::setup_ui_camera)
+            // Main menu systems
             .add_systems(OnEnter(GameState::MainMenu), systems::setup_main_menu)
             .add_systems(
                 Update,

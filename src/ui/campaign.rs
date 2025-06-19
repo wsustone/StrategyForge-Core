@@ -99,7 +99,7 @@ fn setup_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent.spawn(TextBundle::from_section(
                         "CAMPAIGN MISSIONS",
                         TextStyle {
-                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font: default(), // Use Bevy's default font
                             font_size: 24.0,
                             color: Color::WHITE,
                         },

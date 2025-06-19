@@ -19,18 +19,18 @@ pub const TAB_BUTTON_HOVER_COLOR: Color = Color::srgb(0.25, 0.25, 0.35);
 pub const TAB_BUTTON_NORMAL_COLOR: Color = Color::srgb(0.2, 0.2, 0.3);
 
 /// Creates a text style for titles
-pub fn title_text_style(asset_server: &Res<AssetServer>, font_size: f32) -> TextStyle {
+pub fn title_text_style(_asset_server: &Res<AssetServer>, font_size: f32) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: default(), // Use Bevy's default font
         font_size,
         color: Color::WHITE,
     }
 }
 
 /// Creates a text style for regular text
-pub fn regular_text_style(asset_server: &Res<AssetServer>, font_size: f32) -> TextStyle {
+pub fn regular_text_style(_asset_server: &Res<AssetServer>, font_size: f32) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-SemiBold.ttf"),
+        font: default(), // Use Bevy's default font
         font_size,
         color: Color::WHITE,
     }

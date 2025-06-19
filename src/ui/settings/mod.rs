@@ -9,13 +9,27 @@ use bevy::prelude::*;
 use crate::state::GameState;
 
 // Re-export only what's needed
-pub use components::{SettingsState, SettingsTab, SettingsMenuMarker, SettingType, VideoSettingControl};
+pub use components::{
+    SettingsState, SettingsTab, SettingsMenuMarker, SettingType, VideoSettingControl,
+    VideoSettings, SettingControl, TabButton, TabContent, ApplyButton, ResetButton, BackButton,
+    SettingsChangedEvent, ApplySettingsEvent, ResetSettingsEvent, BackToMenuEvent
+};
 pub use styles::*;
 
 /// Setup function to be called by the main app's plugin
 pub fn setup_settings_ui(app: &mut App) {
     app
-        .init_resource::<SettingsState>()
+        .insert_resource(SettingsState {
+            current_tab: 0,
+            video_settings: VideoSettings {
+                resolution: (1280, 720),
+                fullscreen: false,
+                vsync: true,
+                brightness: 1.0,
+                contrast: 1.0,
+                gamma: 1.0,
+            },
+        })
         .add_systems(OnEnter(GameState::Settings), systems::setup_settings_menu)
         .add_systems(
             Update,

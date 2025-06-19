@@ -18,16 +18,20 @@ use super::components::{
     SettingsButton, CreditsButton, ExitButton, MainMenuMarker
 };
 
+/// System to set up the UI camera (runs once at startup)
+pub fn setup_ui_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
+}
+
 pub fn setup_main_menu(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     theme: Res<Theme>,
 ) {
-    // Spawn a 2D camera for the UI
-    commands.spawn(Camera2dBundle::default());
+    // Camera is now created by setup_ui_camera
     
     // Use Bevy's default font
-    let font = asset_server.load("default");
+    let font: Handle<Font> = default();
     let regular_font = font.clone();
     
     // Root node with background
@@ -193,7 +197,7 @@ pub fn setup_main_menu(
 
 fn spawn_menu_button<B: Component + Clone>(
     parent: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
+    _asset_server: &Res<AssetServer>,
     theme: &Theme,
     text: &str,
     button_type: B,
