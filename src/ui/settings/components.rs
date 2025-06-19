@@ -71,17 +71,19 @@ pub enum SettingsTab {
 // Video settings controls
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum VideoSettingControl {
+    DisplayMode,
     Resolution,
-    Fullscreen,
-    VSync,
+    GraphicsQuality,
     Brightness,
     Contrast,
-    Gamma,
+    VSync,
+    FpsLimit,
+    UiScale,
 }
 
 impl Default for VideoSettingControl {
     fn default() -> Self {
-        Self::Resolution
+        Self::DisplayMode
     }
 }
 
@@ -96,12 +98,44 @@ pub struct SettingsState {
 // Video settings
 #[derive(Default, Debug, Clone, Copy)]
 pub struct VideoSettings {
+    pub display_mode: DisplayMode,
     pub resolution: (u32, u32),
-    pub fullscreen: bool,
-    pub vsync: bool,
+    pub graphics_quality: GraphicsQuality,
     pub brightness: f32,
     pub contrast: f32,
-    pub gamma: f32,
+    pub vsync: bool,
+    pub fps_limit: Option<u32>,
+    pub ui_scale: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub enum DisplayMode {
+    Windowed,
+    Fullscreen,
+    Borderless,
+}
+
+impl Default for DisplayMode {
+    fn default() -> Self {
+        Self::Windowed
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub enum GraphicsQuality {
+    Low,
+    Medium,
+    High,
+    Ultra,
+    Custom,
+}
+
+impl Default for GraphicsQuality {
+    fn default() -> Self {
+        Self::High
+    }
 }
 
 // Setting control component

@@ -6,13 +6,15 @@ pub mod styles;
 mod systems;  // Don't export systems directly
 
 use bevy::prelude::*;
+use bevy::window::WindowMode;
 use crate::state::GameState;
 
 // Re-export only what's needed
 pub use components::{
     SettingsState, SettingsTab, SettingsMenuMarker, SettingType, VideoSettingControl,
     VideoSettings, SettingControl, TabButton, TabContent, ApplyButton, ResetButton, BackButton,
-    SettingsChangedEvent, ApplySettingsEvent, ResetSettingsEvent, BackToMenuEvent
+    SettingsChangedEvent, ApplySettingsEvent, ResetSettingsEvent, BackToMenuEvent,
+    DisplayMode, GraphicsQuality
 };
 pub use styles::*;
 
@@ -22,12 +24,14 @@ pub fn setup_settings_ui(app: &mut App) {
         .insert_resource(SettingsState {
             current_tab: 0,
             video_settings: VideoSettings {
-                resolution: (1280, 720),
-                fullscreen: false,
-                vsync: true,
+                display_mode: DisplayMode::Windowed,
+                resolution: (1920, 1080),
+                graphics_quality: GraphicsQuality::High,
                 brightness: 1.0,
                 contrast: 1.0,
-                gamma: 1.0,
+                vsync: true,
+                fps_limit: Some(60),
+                ui_scale: 1.0,
             },
         })
         .add_systems(OnEnter(GameState::Settings), systems::setup_settings_menu)

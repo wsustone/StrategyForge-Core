@@ -5,10 +5,9 @@ use super::{
     SettingsState, SettingControl, SettingType, VideoSettingControl,
     TabButton, BackButton, ApplyButton, ResetButton, TabContent, SettingsMenuMarker
 };
+use super::components::{DisplayMode, GraphicsQuality};
 use bevy::ui::BackgroundColor;
-
-// Re-export the module for external use
-pub use super::components;
+use bevy::window::WindowResolution;
 
 // UI Constants
 const WINDOW_BG_COLOR: Color = Color::srgb(0.1, 0.1, 0.1);
@@ -19,7 +18,7 @@ const TEXT_COLOR: Color = Color::WHITE;
 const TEXT_DISABLED_COLOR: Color = Color::srgba(1.0, 1.0, 1.0, 0.5);
 
 // Helper function to create text style
-fn regular_text_style(asset_server: &Res<AssetServer>, size: f32) -> TextStyle {
+fn regular_text_style(_asset_server: &Res<AssetServer>, size: f32) -> TextStyle {
     TextStyle {
         font: default(), // Use Bevy's default font
         font_size: size,
@@ -81,163 +80,205 @@ pub(crate) fn setup_settings_menu(
             SettingsMenuMarker,
         ))
         .with_children(|parent| {
-            // Title
-            parent.spawn(TextBundle::from_section(
-                "Settings",
-                TextStyle {
-                    font_size: 32.0,
-                    color: TEXT_COLOR,
-                    ..default()
-                },
-            ));
-
-            // Tabs row
+            // Header section with title and tabs
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
-                        align_items: AlignItems::Center,
-                        margin: UiRect::vertical(Val::Px(20.0)),
+                        flex_direction: FlexDirection::Column,
+                        width: Val::Percent(100.0),
+                        margin: UiRect::bottom(Val::Px(20.0)),
                         ..default()
                     },
                     ..default()
                 })
-                .with_children(|tabs| {
-                    // Add tab buttons
-                    for (i, tab_name) in ["Video", "Audio", "Controls", "Gameplay"].iter().enumerate() {
-                        let is_selected = settings_state.current_tab == i as u8;
-                        tabs.spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(10.0)),
-                                    margin: UiRect::right(Val::Px(5.0)),
-                                    ..default()
-                                },
-                                background_color: BackgroundColor(if is_selected {
-                                    BUTTON_SELECTED_COLOR
-                                } else {
-                                    BUTTON_COLOR
-                                }),
+                .with_children(|header| {
+                    // Title with bottom margin
+                    header.spawn(TextBundle::from_section(
+                        "Settings",
+                        TextStyle {
+                            font_size: 40.0,
+                            color: TEXT_COLOR,
+                            ..default()
+                        },
+                    ));
+
+                    // Tabs row with subtle bottom border
+                    header
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                align_items: AlignItems::FlexEnd,
+                                margin: UiRect::top(Val::Px(20.0)),
                                 ..default()
                             },
-                            TabButton::new(i as u8),
-                        ))
-                        .with_children(|button| {
-                            button.spawn(TextBundle::from_section(
-                                *tab_name,
-                                TextStyle {
-                                    font_size: 16.0,
-                                    color: if is_selected { TEXT_COLOR } else { TEXT_DISABLED_COLOR },
-                                    ..default()
-                                },
-                            ));
+                            ..default()
+                        })
+                        .with_children(|tabs| {
+                            // Add tab buttons with better styling
+                            for (i, tab_name) in ["Video", "Audio", "Controls", "Gameplay"].iter().enumerate() {
+                                let is_selected = settings_state.current_tab == i as u8;
+                                tabs.spawn((
+                                    ButtonBundle {
+                                        style: Style {
+                                            padding: UiRect::horizontal(Val::Px(20.0)).with_top(Val::Px(10.0)),
+                                            margin: UiRect::right(Val::Px(2.0)),
+                                            ..default()
+                                        },
+                                        background_color: BackgroundColor(if is_selected {
+                                            PANEL_BG_COLOR
+                                        } else {
+                                            PANEL_BG_COLOR.with_alpha(0.5)
+                                        }),
+                                        ..default()
+                                    },
+                                    TabButton::new(i as u8),
+                                ))
+                                .with_children(|button| {
+                                    button.spawn(TextBundle::from_section(
+                                        *tab_name,
+                                        TextStyle {
+                                            font_size: 18.0,
+                                            color: if is_selected { 
+                                                Color::srgb(0.9, 0.9, 1.0) 
+                                            } else { 
+                                                TEXT_DISABLED_COLOR 
+                                            },
+                                            ..default()
+                                        },
+                                    ));
+                                });
+                            }
                         });
-                    }
                 });
 
-            // Tab content area
+            // Main content area with tab content and action buttons
             parent
                 .spawn(NodeBundle {
                     style: Style {
+                        flex_direction: FlexDirection::Column,
                         flex_grow: 1.0,
-                        padding: UiRect::all(Val::Px(10.0)),
+                        width: Val::Percent(100.0),
                         ..default()
                     },
-                    background_color: BackgroundColor(PANEL_BG_COLOR),
                     ..default()
                 })
                 .with_children(|content| {
-                    // This will be populated based on the selected tab
-                    match settings_state.current_tab {
-                        0 => create_video_settings_tab(content, &asset_server, &settings_state),
-                        _ => {}
-                    }
-                });
-
-            // Bottom buttons row
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Row,
-                        justify_content: JustifyContent::FlexEnd,
-                        margin: UiRect::top(Val::Px(20.0)),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|buttons| {
-                    // Back button
-                    buttons
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(10.0)),
-                                    margin: UiRect::right(Val::Px(10.0)),
-                                    ..default()
-                                },
-                                background_color: BackgroundColor(BUTTON_COLOR),
-                                ..default()
-                            },
-                            BackButton,
-                        ))
-                        .with_children(|button| {
-                            button.spawn(TextBundle::from_section(
-                                "Back",
-                                TextStyle {
-                                    font_size: 16.0,
-                                    color: TEXT_COLOR,
-                                    ..default()
-                                },
-                            ));
-                        });
-
-                    // Apply button
-                    buttons
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(10.0)),
-                                    margin: UiRect::right(Val::Px(10.0)),
-                                    ..default()
-                                },
-                                background_color: BackgroundColor(BUTTON_COLOR),
-                                ..default()
-                            },
-                            ApplyButton,
-                        ))
-                        .with_children(|button| {
-                            button.spawn(TextBundle::from_section(
-                                "Apply",
-                                TextStyle {
-                                    font_size: 16.0,
-                                    color: TEXT_COLOR,
-                                    ..default()
-                                },
-                            ));
-                        });
-
-                    // Reset button
-                    buttons.spawn((
-                        ButtonBundle {
+                    // Tab content area with subtle border
+                    content
+                        .spawn(NodeBundle {
                             style: Style {
-                                padding: UiRect::all(Val::Px(10.0)),
+                                flex_grow: 1.0,
+                                padding: UiRect::all(Val::Px(20.0)),
+                                margin: UiRect::bottom(Val::Px(20.0)),
                                 ..default()
                             },
-                            background_color: BackgroundColor(BUTTON_COLOR),
+                            background_color: BackgroundColor(PANEL_BG_COLOR),
                             ..default()
-                        },
-                        ResetButton,
-                    ))
-                    .with_children(|button| {
-                        button.spawn(TextBundle::from_section(
-                            "Reset",
-                            TextStyle {
-                                font_size: 16.0,
-                                color: TEXT_COLOR,
+                        })
+                        .with_children(|tab_content| {
+                            // This will be populated based on the selected tab
+                            match settings_state.current_tab {
+                                0 => create_video_settings_tab(tab_content, &asset_server, &settings_state),
+                                _ => {}
+                            }
+                        });
+
+                    // Bottom action buttons with proper spacing
+                    content
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::SpaceBetween,
+                                width: Val::Percent(100.0),
                                 ..default()
                             },
-                        ));
-                    });
+                            ..default()
+                        })
+                        .with_children(|buttons| {
+                            // Back button on the left
+                            buttons
+                                .spawn((
+                                    ButtonBundle {
+                                        style: Style {
+                                            padding: UiRect::axes(Val::Px(30.0), Val::Px(12.0)),
+                                            ..default()
+                                        },
+                                        background_color: BackgroundColor(BUTTON_COLOR),
+                                        ..default()
+                                    },
+                                    BackButton,
+                                ))
+                                .with_children(|button| {
+                                    button.spawn(TextBundle::from_section(
+                                        "Back",
+                                        TextStyle {
+                                            font_size: 18.0,
+                                            color: TEXT_COLOR,
+                                            ..default()
+                                        },
+                                    ));
+                                });
+
+                            // Action buttons on the right
+                            buttons
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        flex_direction: FlexDirection::Row,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|action_buttons| {
+                                    // Reset button
+                                    action_buttons
+                                        .spawn((
+                                            ButtonBundle {
+                                                style: Style {
+                                                    padding: UiRect::axes(Val::Px(20.0), Val::Px(12.0)),
+                                                    margin: UiRect::right(Val::Px(15.0)),
+                                                    ..default()
+                                                },
+                                                background_color: BackgroundColor(BUTTON_COLOR),
+                                                ..default()
+                                            },
+                                            ResetButton,
+                                        ))
+                                        .with_children(|button| {
+                                            button.spawn(TextBundle::from_section(
+                                                "Reset to Defaults",
+                                                TextStyle {
+                                                    font_size: 16.0,
+                                                    color: TEXT_COLOR,
+                                                    ..default()
+                                                },
+                                            ));
+                                        });
+
+                                    // Apply button with accent color
+                                    action_buttons
+                                        .spawn((
+                                            ButtonBundle {
+                                                style: Style {
+                                                    padding: UiRect::axes(Val::Px(30.0), Val::Px(12.0)),
+                                                    ..default()
+                                                },
+                                                background_color: BackgroundColor(Color::srgb(0.2, 0.5, 0.8)),
+                                                ..default()
+                                            },
+                                            ApplyButton,
+                                        ))
+                                        .with_children(|button| {
+                                            button.spawn(TextBundle::from_section(
+                                                "Apply",
+                                                TextStyle {
+                                                    font_size: 18.0,
+                                                    color: Color::WHITE,
+                                                    ..default()
+                                                },
+                                            ));
+                                        });
+                                });
+                        });
                 });
         });
 }
@@ -252,18 +293,81 @@ fn create_video_settings_tab(
         .spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Column,
+                width: Val::Percent(100.0),
                 ..default()
             },
             ..default()
         })
         .with_children(|content| {
-            // Add video settings controls here
-            // Example: Resolution, Fullscreen, VSync, etc.
+            // Display Mode
             create_setting_row(
                 content,
                 asset_server,
-                "Fullscreen",
-                SettingControl::new(SettingType::Video(VideoSettingControl::Fullscreen)),
+                "Display Mode",
+                SettingControl::new(SettingType::Video(VideoSettingControl::DisplayMode)),
+                settings_state,
+            );
+
+            // Resolution
+            create_setting_row(
+                content,
+                asset_server,
+                "Resolution",
+                SettingControl::new(SettingType::Video(VideoSettingControl::Resolution)),
+                settings_state,
+            );
+
+            // Graphics Quality
+            create_setting_row(
+                content,
+                asset_server,
+                "Graphics Quality",
+                SettingControl::new(SettingType::Video(VideoSettingControl::GraphicsQuality)),
+                settings_state,
+            );
+
+            // Brightness
+            create_setting_row(
+                content,
+                asset_server,
+                "Brightness",
+                SettingControl::new(SettingType::Video(VideoSettingControl::Brightness)),
+                settings_state,
+            );
+
+            // Contrast
+            create_setting_row(
+                content,
+                asset_server,
+                "Contrast",
+                SettingControl::new(SettingType::Video(VideoSettingControl::Contrast)),
+                settings_state,
+            );
+
+            // VSync
+            create_setting_row(
+                content,
+                asset_server,
+                "VSync",
+                SettingControl::new(SettingType::Video(VideoSettingControl::VSync)),
+                settings_state,
+            );
+
+            // FPS Limit
+            create_setting_row(
+                content,
+                asset_server,
+                "FPS Limit",
+                SettingControl::new(SettingType::Video(VideoSettingControl::FpsLimit)),
+                settings_state,
+            );
+
+            // UI Scale
+            create_setting_row(
+                content,
+                asset_server,
+                "UI Scale",
+                SettingControl::new(SettingType::Video(VideoSettingControl::UiScale)),
                 settings_state,
             );
         });
@@ -331,22 +435,105 @@ pub(crate) fn handle_settings_changes(
     for (interaction, control) in interaction_query.iter_mut() {
         if *interaction == Interaction::Pressed {
             if let Some(video_control) = control.as_video_setting_control() {
-                match video_control {
-                    VideoSettingControl::Fullscreen => {
-                        settings_state.video_settings.fullscreen = !settings_state.video_settings.fullscreen;
-                        if let Ok(mut window) = window_query.get_single_mut() {
-                            window.mode = if settings_state.video_settings.fullscreen {
-                                WindowMode::Fullscreen
-                            } else {
-                                WindowMode::Windowed
+                if let Ok(mut window) = window_query.get_single_mut() {
+                    match video_control {
+                        VideoSettingControl::DisplayMode => {
+                            // Cycle through display modes: Windowed -> Borderless -> Fullscreen -> Windowed
+                            settings_state.video_settings.display_mode = match settings_state.video_settings.display_mode {
+                                DisplayMode::Windowed => DisplayMode::Borderless,
+                                DisplayMode::Borderless => DisplayMode::Fullscreen,
+                                DisplayMode::Fullscreen => DisplayMode::Windowed,
+                            };
+                            
+                            // Apply the display mode to the window
+                            window.mode = match settings_state.video_settings.display_mode {
+                                DisplayMode::Windowed => WindowMode::Windowed,
+                                DisplayMode::Borderless => WindowMode::BorderlessFullscreen,
+                                DisplayMode::Fullscreen => WindowMode::Fullscreen,
                             };
                         }
+                        VideoSettingControl::Resolution => {
+                            // Cycle through common resolutions
+                            let resolutions = [
+                                (1280, 720),
+                                (1366, 768),
+                                (1600, 900),
+                                (1920, 1080),
+                                (2560, 1440),
+                                (3840, 2160),
+                            ];
+                            
+                            if let Some(pos) = resolutions.iter().position(|&r| r == settings_state.video_settings.resolution) {
+                                let next_pos = (pos + 1) % resolutions.len();
+                                settings_state.video_settings.resolution = resolutions[next_pos];
+                            } else {
+                                settings_state.video_settings.resolution = (1920, 1080); // Default to 1080p
+                            }
+                            
+                            // Apply resolution if in windowed mode
+                            if let WindowMode::Windowed = window.mode {
+                                window.resolution = WindowResolution::new(
+                                settings_state.video_settings.resolution.0 as f32,
+                                settings_state.video_settings.resolution.1 as f32
+                            );
+                            }
+                        }
+                        VideoSettingControl::GraphicsQuality => {
+                            // Cycle through quality presets
+                            settings_state.video_settings.graphics_quality = match settings_state.video_settings.graphics_quality {
+                                GraphicsQuality::Low => GraphicsQuality::Medium,
+                                GraphicsQuality::Medium => GraphicsQuality::High,
+                                GraphicsQuality::High => GraphicsQuality::Ultra,
+                                GraphicsQuality::Ultra => GraphicsQuality::Custom,
+                                GraphicsQuality::Custom => GraphicsQuality::Low,
+                            };
+                            // TODO: Apply graphics quality settings
+                        }
+                        VideoSettingControl::Brightness => {
+                            // Cycle brightness between 0.5 and 1.5 in 0.1 increments
+                            settings_state.video_settings.brightness = (settings_state.video_settings.brightness + 0.1) % 1.6;
+                            if settings_state.video_settings.brightness < 0.5 {
+                                settings_state.video_settings.brightness = 0.5;
+                            }
+                            // TODO: Apply brightness to the renderer
+                        }
+                        VideoSettingControl::Contrast => {
+                            // Cycle contrast between 0.5 and 1.5 in 0.1 increments
+                            settings_state.video_settings.contrast = (settings_state.video_settings.contrast + 0.1) % 1.6;
+                            if settings_state.video_settings.contrast < 0.5 {
+                                settings_state.video_settings.contrast = 0.5;
+                            }
+                            // TODO: Apply contrast to the renderer
+                        }
+                        VideoSettingControl::VSync => {
+                            settings_state.video_settings.vsync = !settings_state.video_settings.vsync;
+                            // TODO: Apply VSync setting to the renderer
+                        }
+                        VideoSettingControl::FpsLimit => {
+                            // Cycle through common FPS limits
+                            let fps_limits = [None, Some(30), Some(60), Some(120), Some(144), Some(240)];
+                            
+                            if let Some(pos) = fps_limits.iter().position(|&f| f == settings_state.video_settings.fps_limit) {
+                                let next_pos = (pos + 1) % fps_limits.len();
+                                settings_state.video_settings.fps_limit = fps_limits[next_pos];
+                            } else {
+                                settings_state.video_settings.fps_limit = Some(60); // Default to 60 FPS
+                            }
+                            // TODO: Apply FPS limit to the renderer
+                        }
+                        VideoSettingControl::UiScale => {
+                            // Cycle through UI scale factors
+                            let scales = [0.75, 1.0, 1.25, 1.5, 2.0];
+                            
+                            if let Some(pos) = scales.iter().position(|&s| (s - settings_state.video_settings.ui_scale).abs() < f32::EPSILON) {
+                                let next_pos = (pos + 1) % scales.len();
+                                settings_state.video_settings.ui_scale = scales[next_pos];
+                            } else {
+                                settings_state.video_settings.ui_scale = 1.0; // Default to 100%
+                            }
+                            // TODO: Apply UI scale to the UI system
+                        }
                     }
-                    VideoSettingControl::VSync => {
-                        settings_state.video_settings.vsync = !settings_state.video_settings.vsync;
-                        // TODO: Apply VSync setting to the renderer
-                    }
-                    _ => {}
                 }
             }
         }
