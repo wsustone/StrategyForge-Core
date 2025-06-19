@@ -1,48 +1,7 @@
 //! Utility functions and helpers for UI
 
 use bevy::prelude::*;
-use crate::ui::components::ButtonHoverEffect;
-use crate::ui::theme::ButtonTheme;
-
-/// Creates a button with hover effects and text
-pub fn create_button(
-    theme: &ButtonTheme,
-    text: impl Into<String>,
-    font: Handle<Font>,
-) -> (ButtonBundle, ButtonHoverEffect) {
-    let button_bundle = ButtonBundle {
-        style: Style {
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            padding: UiRect::all(Val::Px(10.0)),
-            margin: UiRect::all(Val::Px(5.0)),
-            ..Default::default()
-        },
-        background_color: theme.normal.into(),
-        ..Default::default()
-    };
-
-    let hover_effect = ButtonHoverEffect {
-        normal: theme.normal,
-        hovered: theme.hovered,
-        pressed: theme.pressed,
-    };
-
-    // Add text as a child of the button
-    let mut button = button_bundle;
-    
-    // Add the text as a child of the button
-    button.children.push(TextBundle::from_section(
-        text,
-        TextStyle {
-            font,
-            font_size: 24.0,
-            color: Color::WHITE,
-        },
-    ).into());
-
-    (button, hover_effect)
-}
+use crate::ButtonHoverEffect;
 
 /// Creates a text bundle with the given style
 pub fn create_text(
@@ -51,11 +10,10 @@ pub fn create_text(
     font_size: f32,
     color: Color,
 ) -> TextBundle {
-    let text_str = text.into();
     TextBundle::from_section(
-        text_str,
+        text,
         TextStyle {
-            font: font.clone(),
+            font,
             font_size,
             color,
         },

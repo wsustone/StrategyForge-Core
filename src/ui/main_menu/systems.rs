@@ -10,7 +10,7 @@ use bevy::{
 use crate::state::GameState;
 use crate::ui::components::ButtonHoverEffect;
 use crate::ui::theme::Theme;
-use crate::ui::utils::create_button;
+use crate::ui::theme::ButtonTheme;
 
 // Import button components from the main menu components module
 use super::components::{
@@ -157,87 +157,95 @@ pub fn setup_main_menu(
                             );
 
                             // Exit button with different styling
-                            let (button_bundle, hover_effect) = create_button(
-                                &theme.button,
-                                "EXIT",
-                                font.clone(),
-                            );
-                            
-                            parent
-                                .spawn((
-                                    ButtonBundle {
-                                        style: Style {
-                                            margin: UiRect::top(Val::Px(30.0)),
-                                            ..button_bundle.style
-                                        },
-                                        background_color: Color::NONE.into(),
-                                        border_color: theme.ui.error.into(),
-                                        ..button_bundle
+                            parent.spawn((
+                                ButtonBundle {
+                                    style: Style {
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center,
+                                        padding: UiRect::all(Val::Px(10.0)),
+                                        margin: UiRect::top(Val::Px(30.0)),
+                                        ..Default::default()
                                     },
-                                    hover_effect,
-                                    ExitButton,
-                                ))
-                                .with_children(|parent| {
-                                    parent.spawn(TextBundle::from_section(
-                                        "EXIT",
-                                        TextStyle {
-                                            font: font.clone(),
-                                            font_size: 24.0,
-                                            color: theme.ui.error,
-                                        },
-                                    ));
-                                });
+                                    background_color: Color::NONE.into(),
+                                    border_color: theme.ui.error.into(),
+                                    ..Default::default()
+                                },
+                                ButtonHoverEffect {
+                                    normal: Color::NONE,
+                                    hovered: Color::srgba(1.0, 0.2, 0.2, 0.2),
+                                    pressed: Color::srgba(1.0, 0.1, 0.1, 0.3),
+                                },
+                                ExitButton,
+                            )).with_children(|parent| {
+                                parent.spawn(TextBundle::from_section(
+                                    "EXIT",
+                                    TextStyle {
+                                        font: default(), // Use Bevy's default font
+                                        font_size: 24.0,
+                                        color: theme.ui.error,
+                                    },
+                                ));
+                            });
                         });
                 });
         });
 }
 
-fn spawn_menu_button<B: Component>(
+fn spawn_menu_button<B: Component + Clone>(
     parent: &mut ChildBuilder,
     asset_server: &Res<AssetServer>,
     theme: &Theme,
     text: &str,
     button_type: B,
 ) -> Entity {
-    // Create a simple button style directly instead of using create_button
-    let button_style = Style {
-        width: Val::Percent(100.0),
-        height: Val::Px(50.0),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        margin: UiRect::bottom(Val::Px(10.0)),
-        ..default()
+    // Create a custom button theme for menu buttons
+    let button_theme = ButtonTheme {
+        normal: theme.button.normal,
+        hovered: theme.button.hovered,
+        pressed: theme.button.pressed,
+        disabled: theme.button.disabled,
+        text: theme.button.text,
+        border: theme.button.border,
+        border_thickness: theme.button.border_thickness,
+        corner_radius: theme.button.corner_radius,
     };
     
-    let normal_color = Color::srgb(0.15, 0.15, 0.2);
-    let hover_color = Color::srgb(0.2, 0.2, 0.25);
-    let press_color = Color::srgb(0.1, 0.1, 0.15);
+    // Create text style with default font
+    let text_style = TextStyle {
+        font: default(), // Use Bevy's default font
+        font_size: 24.0,
+        color: theme.ui.text,
+    };
     
-    parent
-        .spawn((
-            ButtonBundle {
-                style: button_style,
-                background_color: BackgroundColor(normal_color),
-                ..default()
+    // Spawn the button with text and button type
+    let mut commands = parent.spawn((
+        ButtonBundle {
+            style: Style {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                padding: UiRect::all(Val::Px(10.0)),
+                margin: UiRect::bottom(Val::Px(10.0)),
+                ..Default::default()
             },
-            ButtonHoverEffect {
-                normal: normal_color,
-                hovered: hover_color,
-                pressed: press_color,
-            },
-            button_type,
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                text,
-                TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 24.0,
-                    color: theme.ui.text,
-                },
-            ));
-        })
-        .id()
+            background_color: button_theme.normal.into(),
+            ..Default::default()
+        },
+        button_type,
+    ));
+    
+    // Add hover effect
+    commands.insert(ButtonHoverEffect {
+        normal: button_theme.normal,
+        hovered: button_theme.hovered,
+        pressed: button_theme.pressed,
+    });
+    
+    // Add text as a child
+    commands.with_children(|parent| {
+        parent.spawn(TextBundle::from_section(text, text_style));
+    });
+    
+    commands.id()
 }
 
 pub fn handle_menu_button_interactions(
