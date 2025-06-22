@@ -540,12 +540,13 @@ pub(crate) fn handle_settings_changes(
     }
 }
 
-pub(crate) fn cleanup_menu<T: Component>(
+pub fn cleanup_menu<T: Component>(
     mut commands: Commands,
     query: Query<Entity, With<T>>,
 ) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+    for entity in &query {
+        if let Some(entity_commands) = commands.get_entity(entity) {
+            entity_commands.despawn_recursive();
+        }
     }
 }
-

@@ -10,14 +10,16 @@ name = "strategyforge-core"
 path = "src/main.rs"
 
 [dependencies]
-# Bevy - Using features from workspace
+# Bevy - Using workspace version with its features
 bevy = { workspace = true }
 
-# UI and Plugins
+# UI and Plugins - Use workspace versions to ensure compatibility
 bevy_egui = { workspace = true }
 egui = { workspace = true }
+bevy-inspector-egui = { workspace = true, default-features = false }
 
 # Core Dependencies
+rand = "0.8.5"
 thiserror = { workspace = true }
 dyn-clone = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -48,3 +50,4 @@ release = [
 test = [
     "bevy/bevy_winit"
 ]
+

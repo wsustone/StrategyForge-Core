@@ -18,17 +18,12 @@ use super::components::{
     SettingsButton, CreditsButton, ExitButton, MainMenuMarker
 };
 
-/// System to set up the UI camera (runs once at startup)
-pub fn setup_ui_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
-}
-
 pub fn setup_main_menu(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     theme: Res<Theme>,
 ) {
-    // Camera is now created by setup_ui_camera
+    // UI camera is already set up by the CameraPlugin
     
     // Use Bevy's default font
     let font: Handle<Font> = default();
@@ -279,15 +274,13 @@ pub fn handle_menu_button_interactions(
         if *interaction != Interaction::Pressed {
             continue;
         }
-
+        
         // Handle button actions based on button type
         if new_game.is_some() {
-            next_state.set(GameState::Singleplayer);
+            next_state.set(GameState::InGame { is_paused: false });
         } else if load_game.is_some() {
-            // TODO: Implement load game
             println!("Load game clicked");
         } else if multiplayer.is_some() {
-            // TODO: Implement multiplayer
             println!("Multiplayer clicked");
         } else if settings.is_some() {
             next_state.set(GameState::Settings);
@@ -305,6 +298,8 @@ pub fn cleanup_menu<T: Component>(
     query: Query<Entity, With<T>>,
 ) {
     for entity in &query {
-        commands.entity(entity).despawn_recursive();
+        if let Some(entity_commands) = commands.get_entity(entity) {
+            entity_commands.despawn_recursive();
+        }
     }
 }

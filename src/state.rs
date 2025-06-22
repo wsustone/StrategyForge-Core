@@ -16,7 +16,14 @@ pub enum GameState {
     /// Campaign selection and management
     CampaignMenu,
     
-    /// Single player game mode
+    /// In-game state
+    InGame {
+        /// Whether the game is paused
+        is_paused: bool,
+    },
+    
+    /// Single player game mode (legacy, will be removed)
+    #[deprecated(note = "Use GameState::InGame instead")]
     Singleplayer,
     
     /// Multiplayer game mode

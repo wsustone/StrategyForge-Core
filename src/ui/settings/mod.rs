@@ -6,7 +6,6 @@ pub mod styles;
 mod systems;  // Don't export systems directly
 
 use bevy::prelude::*;
-use bevy::window::WindowMode;
 use crate::state::GameState;
 
 // Re-export only what's needed

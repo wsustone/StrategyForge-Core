@@ -18,6 +18,7 @@ pub mod state;
 /// This module contains the main menu UI components and systems for handling
 /// user interactions with the main menu.
 pub mod menu;
+pub mod world;
 
 // Re-export commonly needed types
 pub use bevy::prelude::*;

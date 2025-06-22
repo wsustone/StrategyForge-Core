@@ -58,9 +58,7 @@ struct CampaignState {
 }
 
 fn setup_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn camera for the campaign menu
-    commands.spawn((Camera2dBundle::default(), CampaignMenuMarker));
-    
+    // Use the existing UI camera
     // Root node
     commands
         .spawn((
@@ -386,9 +384,8 @@ fn handle_campaign_button_interactions(
         // Handle start mission button
         if start_button_query.get(entity).is_ok() {
             if let Some(_mission_id) = campaign_state.selected_mission {
-                // TODO: Start the selected mission
-                // Using Singleplayer as the game state since Gameplay doesn't exist
-                next_state.set(GameState::Singleplayer);
+                // Start the selected mission
+                next_state.set(GameState::InGame { is_paused: false });
             }
             continue;
         }
@@ -405,7 +402,9 @@ fn cleanup_menu<T: Component>(
     mut commands: Commands,
     query: Query<Entity, With<T>>,
 ) {
-    for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+    for entity in &query {
+        if let Some(entity_commands) = commands.get_entity(entity) {
+            entity_commands.despawn_recursive();
+        }
     }
 }
